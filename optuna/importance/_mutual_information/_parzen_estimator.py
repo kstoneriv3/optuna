@@ -18,11 +18,9 @@ _DISTRIBUTION_CLASSES = (
 )
 
 
-# This is a simplified version of `_MultivariateParzenEstimator`,
-# which was originally implemented for `TPESampler.sample_relative` method.
-# This class only supports `UniformDistribution` or `CategoricalDistribution`.
-
-
+# This is a simplified version of `optuna.samplers._tpe_._MultivariateParzenEstimator`, which was
+# originally implemented for `TPESampler.sample_relative` method. This class only supports 
+# `UniformDistribution` or `CategoricalDistribution`.
 class _MultivariateParzenEstimator:
     def __init__(
         self,

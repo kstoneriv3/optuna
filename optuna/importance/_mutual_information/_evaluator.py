@@ -34,6 +34,11 @@ EPS = 1e-6
 
 # This evaluator converts all the non-categorical distributions into uniform and calculate MI.
 class MutualInformationImportanceEvaluator(BaseImportanceEvaluator):
+    """Mutual Information (MI) parameter importance evaluator.
+
+    This evaluator constructs parzen estimator of joint density of objective values given
+    hyperparameter configurations. Feature importances are then computed using MI.
+    """
     def evaluate(self, study: Study, params: Optional[List[str]] = None) -> Dict[str, float]:
 
         search_space = study.best_trial.distributions
@@ -53,8 +58,8 @@ class MutualInformationImportanceEvaluator(BaseImportanceEvaluator):
         return OrderedDict(mi_sorted)
 
     # Evaluate stddiv of the estiamted MI by the bootstrap method.
-    def evaluate_stddiv(
-        self, study: Study, params: Optional[List[str]] = None, B: int = 100
+    def evaluate_conf_int(
+        self, study: Study, params: Optional[List[str]] = None, B: int = 100, alpha=0.1
     ) -> Dict[str, float]:
 
         search_space = study.best_trial.distributions
@@ -84,8 +89,11 @@ class MutualInformationImportanceEvaluator(BaseImportanceEvaluator):
                     )
                 )
 
-        stddiv = {k: np.std(v, ddof=1) for k, v in mi.items()}
-        return stddiv
+        conf_int = {}
+        edge_idx = np.math.ceil(B * alpha / 2)
+        for k, v in mi.items():
+            conf_int[k] = (np.partition(v, edge_idx)[edge_idx], np.partition(v, -edge_idx)[-edge_idx])
+        return conf_int
 
     def _evaluate_MI(
         self,
